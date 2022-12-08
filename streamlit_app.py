@@ -28,7 +28,7 @@ def check2(us, col, c):
     return False
 
 st.set_page_config(
-    page_title="Datvilla",
+    page_title="Home Ai Search",
     page_icon="🧊",
     layout="centered",
     initial_sidebar_state="expanded",
