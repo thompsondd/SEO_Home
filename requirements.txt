@@ -4,3 +4,4 @@ altair
 numpy
 pandas
 streamlit
+deta

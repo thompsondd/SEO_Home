@@ -71,7 +71,7 @@ if len(quan)!=0:
             vs = st.selectbox('Số phòng vệ sinh', (1,2,3))
         search = st.button("Search")
     if search:
-        pass
+        #pass
         user = db.fetch_all_apartments()    
         dis = []
         for us in user:
