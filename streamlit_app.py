@@ -7,7 +7,7 @@ import pandas as pd
 import webbrowser
 from PIL import Image
 import database as db
-
+#dotenv == 0.0.5
 def check1(us, col, c):
     temp1 = np.array(us[col].split("-")).astype(float)
     temp1 = np.ceil(temp1).astype(int)
