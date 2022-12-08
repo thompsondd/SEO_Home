@@ -45,7 +45,7 @@ with col1:
     st.image(Image.open('dark_logo.png'))
 with col2:
     st.header(' ')
-    st.header('Knowledge Represent')
+    st.header('Knowledge Representation')
     st.markdown('Your choice, your comfort')
 
 with st.form("my_form"):
