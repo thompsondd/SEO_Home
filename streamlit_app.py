@@ -6,7 +6,7 @@ import altair as alt
 import pandas as pd
 import webbrowser
 from PIL import Image
-import database as db
+#import database as db
 #dotenv == 0.0.5
 def check1(us, col, c):
     temp1 = np.array(us[col].split("-")).astype(float)
@@ -71,16 +71,17 @@ if len(quan)!=0:
             vs = st.selectbox('Số phòng vệ sinh', (1,2,3))
         search = st.button("Search")
     if search:
-        user = db.fetch_all_apartments()    
-        dis = []
-        for us in user:
-            for i in quan:
-                if (us['districts'] == i):
-                    if(check1(us,'rates',money)):
-                        if(check1(us,'areas',area)):
-                            if(check2(us,'wc',vs)):
-                                if(check2(us,'bedrooms',sleep)):
-                                    dis.append(us)
+        pass
+        #user = db.fetch_all_apartments()    
+        #dis = []
+        #for us in user:
+        #    for i in quan:
+        #        if (us['districts'] == i):
+        #            if(check1(us,'rates',money)):
+        #                if(check1(us,'areas',area)):
+        #                    if(check2(us,'wc',vs)):
+        #                        if(check2(us,'bedrooms',sleep)):
+        #                            dis.append(us)
 
         for q in quan:
             st.header('Quận ' + q)
