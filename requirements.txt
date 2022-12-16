@@ -5,3 +5,4 @@ numpy
 pandas
 streamlit
 deta
+streamlit_nested_layout
