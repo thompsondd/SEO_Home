@@ -7,7 +7,7 @@ import pandas as pd
 import webbrowser
 from PIL import Image
 import database as db
-
+import streamlit_nested_layout
 
 def check1(us, col, c):
     temp1 = np.array(us[col].split("-")).astype(float)
@@ -100,7 +100,11 @@ with st.form("first_form"):
 if submitted:
     user = db.fetch_all_apartments()    
     count=1
-    for i in quan:
+    quan.sort()
+    huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
+    distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
+    
+    for i,tabs in zip(quan,distric_tab):
         dis = []
         for us in user:
             if (us['districts'] == i):
@@ -109,75 +113,86 @@ if submitted:
                         if(check2(us,'wc',vs)):
                             if(check2(us,'bedrooms',sleep)):
                                 dis.append(us)
-        st.header('Quận ' + i)
-        if (len(dis)==0):
-            st.write("Không tìm thấy dữ liệu phù hợp!")
-        else:
-            for d in dis: 
-                col1, col2 = st.columns((1,1))
-                    # st.write(d)
-                with col1:
-                    st.image(d['links'])
-                # with col2:
-                st.subheader(d['key'])
-                st.info(d['addresses'] + ", phường " + d['wards'] + ", quận " + d['districts'] + ', Tp.HCM', icon="🏢")
-                
-                col1, col2, col3, col4 = st.columns((1.3,1,1,1.5))
-                with col1:
-                    st.info(d['areas'] + ' m²',icon='🛋')
-                with col2:
-                    st.success(d['bedrooms'],icon='🛏️')
-                with col3:
-                    st.warning(d['wc'],icon='🛁')
-                with col4:
-                    st.error(d['rates'] + " triệu/m²",icon='💲')
-                
-                with st.expander('Những tiện ích xung quanh'):
-                    col1, col2, col3, col4 = st.columns((3,1,3,1))
+        with tabs:
+            if i not in huyen:
+                st.header('Quận ' + i)
+            else:
+                st.header('Huyện  ' + i)
+            if (len(dis)==0):
+                st.write("Không tìm thấy dữ liệu phù hợp!")
+            else:
+                for d in dis: 
+                    width = 500
+                    col1, col2 = st.columns((1,1))
+                        # st.write(d)
                     with col1:
-                        st.markdown('Số trường học: ')
-                        st.write('- - - - - - - - - - - - - - - - - - ')
+                        st.image(d['links'],width=width)
                     with col2:
-                        a=d['schools']
-                        st.write(a)
-                    with col3:
-                        st.markdown('Số trạm xe bus: ')
-                        st.write('- - - - - - - - - - - - - - - - - - ')
-                    with col4:
-                        a=d['buses']
-                        st.write(a)
-                    col1, col2, col3, col4 = st.columns((3,1,3,1))
-                    with col1:
-                        st.markdown('Số siêu thị: ')
-                        st.write('- - - - - - - - - - - - - - - - - - ')
-                    with col2:
-                        a=d['markets']
-                        st.write(a)
-                    with col3:
-                        st.markdown('Số trạm nhà hàng: ')
-                        st.write('- - - - - - - - - - - - - - - - - - ')
-                    with col4:
-                        a=d['restaurants']
-                        st.write(a)
-                    col1, col2, col3, col4 = st.columns((3,1,3,1))
-                    with col1:
-                        st.markdown('Số cây ATM: ')
-                    with col2:
-                        a=d['atm']
-                        st.write(a)
-                    with col3:
-                        st.markdown('Số cơ sở y tế: ')
-                    with col4:
-                        a=d['hospitals']
-                        st.write(a) 
+
+                        st.subheader(d['key'])
+                        st.info(d['addresses'] + ", Phường " + d['wards'] + (", Quận " + d['districts'] if d['districts'] not in huyen else f", Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
+                        # st.info('')
+                        # st.info(d['areas'] + ' m²',icon='🛋')
+                        # st.success(d['bedrooms'],icon='🛏️')
+                        # st.warning(d['wc'],icon='🛁')
+                        # st.error(d['rates'] + " triệu/m²",icon='💲')
                     
-                st.write('--------------------------')
-        # submitted = st.form_submit_button("Trang " + str(count))
-        # st.write(submitted)
-        # if not submitted:
-        #     st.stop()
-            # st.experimental_rerun()
-        count+=1
+                        col1, col2, col3, col4 = st.columns((1.3,1,1,1.7))
+                        with col1:
+                            st.info(d['areas'] + ' m²',icon='🛋')
+                        with col2:
+                            st.success(d['bedrooms'],icon='🛏️')
+                        with col3:
+                            st.warning(d['wc'],icon='🛁')
+                        with col4:
+                            st.error(d['rates'] + " triệu/m²",icon='💲')
+                    
+                        with st.expander('Những tiện ích xung quanh'):
+                            col1, col2, col3, col4 = st.columns((3,1,3,1))
+                            with col1:
+                                st.markdown('Số trường học: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col2:
+                                a=d['schools']
+                                st.write(a)
+                            with col3:
+                                st.markdown('Số trạm xe bus: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col4:
+                                a=d['buses']
+                                st.write(a)
+                            col1, col2, col3, col4 = st.columns((3,1,3,1))
+                            with col1:
+                                st.markdown('Số siêu thị: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col2:
+                                a=d['markets']
+                                st.write(a)
+                            with col3:
+                                st.markdown('Số trạm nhà hàng: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col4:
+                                a=d['restaurants']
+                                st.write(a)
+                            col1, col2, col3, col4 = st.columns((3,1,3,1))
+                            with col1:
+                                st.markdown('Số cây ATM: ')
+                            with col2:
+                                a=d['atm']
+                                st.write(a)
+                            with col3:
+                                st.markdown('Số cơ sở y tế: ')
+                            with col4:
+                                a=d['hospitals']
+                                st.write(a) 
+                        
+                    st.write('--------------------------')
+            # submitted = st.form_submit_button("Trang " + str(count))
+            # st.write(submitted)
+            # if not submitted:
+            #     st.stop()
+                # st.experimental_rerun()
+            count+=1
             
 
 url = 'https://youtu.be/'
@@ -186,3 +201,4 @@ url_= 'dQw4w9WgXcQ'
 if st.button('_do not click_ **this**'):
     webbrowser.open_new_tab(url+url_)
     st.caption('i told ya')
+
