@@ -92,7 +92,8 @@ if submitted:
         temp2 = np.array(temp2).astype(int)
         temp1.sort()
         temp2.sort()
-        quan = np.concatenate((temp2,temp1))
+        if len(temp1) != 0 and len(temp2) != 0:
+            quan = np.concatenate((temp2,temp1))
         
     huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
     distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
