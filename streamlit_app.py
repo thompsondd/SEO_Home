@@ -40,8 +40,8 @@ st.set_page_config(
     }
 )
 
-# st.write()
-# st.balloons()
+
+st.balloons()
 col1, col2, col3 = st.columns((2,4,4))
 with col1:
     st.image(Image.open('logo.png'), width=250)
@@ -58,13 +58,9 @@ with st.form("first_form"):
                 ('Select All','1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
                 'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
                 'Hóc Môn', 'Bình Chánh', 'Nhà Bè', 'Củ Chi'))
-        # if quan == ["Select All"]:
-        if "Select All" in quan:
-            # quan = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
-            # 'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
-            # 'Hóc Môn', 'Bình Chánh', 'Nhà Bè', 'Củ Chi')
-            quan = ('1', '2', '3', '4', '5')
-        # st.write(quan)
+        
+        
+        
     with col2:
         bottom_money = st.selectbox('Giá thấp nhất (triệu vnd)', ('Giá thấp nhất',20,40,60,80,100))
         if bottom_money == 'Giá thấp nhất':
@@ -83,24 +79,21 @@ with st.form("first_form"):
         vs = st.selectbox('Số phòng vệ sinh', (1,2,3))
     submitted = st.form_submit_button("Seach")
 
-
-# if not quan and submitted==True:
-#     st.warning("Hãy chọn quận!!",icon="⚠️")
-
-# if len(quan)!=0:
-#     with st.expander('Bộ lọc'):
-#         money = st.slider('Giá tiền (triệu/m²)',0, 200, (0, 200))
-#         area = st.slider('Diện tích (m²)', 0, 500, (0, 500))
-#         col1, col2 = st.columns((1,1))
-#         with col1:
-#             sleep = st.selectbox('Số phòng ngủ', (1,2,3,4,5))
-#         with col2:
-#             vs = st.selectbox('Số phòng vệ sinh', (1,2,3))
-#         search = st.button("Search")
 if submitted:
     user = db.fetch_all_apartments()    
-    count=1
-    quan.sort()
+    if "Select All" in quan:
+            quan = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
+            'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
+            'Hóc Môn', 'Bình Chánh', 'Nhà Bè', 'Củ Chi')
+    else:
+        number = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        temp1, temp2 = [], []
+        list(map(lambda x: temp1.append(x) if x not in number else temp2.append(x),quan))
+        temp2 = np.array(temp2).astype(int)
+        temp1.sort()
+        temp2.sort()
+        quan = np.concatenate((temp2,temp1))
+        
     huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
     distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
     
@@ -124,18 +117,12 @@ if submitted:
                 for d in dis: 
                     width = 500
                     col1, col2 = st.columns((1,1))
-                        # st.write(d)
                     with col1:
                         st.image(d['links'],width=width)
                     with col2:
 
                         st.subheader(d['key'])
                         st.info(d['addresses'] + ", Phường " + d['wards'] + (", Quận " + d['districts'] if d['districts'] not in huyen else f", Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
-                        # st.info('')
-                        # st.info(d['areas'] + ' m²',icon='🛋')
-                        # st.success(d['bedrooms'],icon='🛏️')
-                        # st.warning(d['wc'],icon='🛁')
-                        # st.error(d['rates'] + " triệu/m²",icon='💲')
                     
                         col1, col2, col3, col4 = st.columns((1.3,1,1,1.7))
                         with col1:
@@ -186,13 +173,8 @@ if submitted:
                                 a=d['hospitals']
                                 st.write(a) 
                         
-                    st.write('--------------------------')
-            # submitted = st.form_submit_button("Trang " + str(count))
-            # st.write(submitted)
-            # if not submitted:
-            #     st.stop()
-                # st.experimental_rerun()
-            count+=1
+                
+    
             
 
 url = 'https://youtu.be/'
