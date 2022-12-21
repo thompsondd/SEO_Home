@@ -4,37 +4,46 @@ from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
 
+#
 load_dotenv(".env")
 DETA_KEY = os.getenv("DETA_KEY")
-
 
 deta = Deta(DETA_KEY)
 
 db = deta.Base("rec_apartments")
 
-def insert_apartments(names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm):
+#insert
+def insert_apartments(names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm,X,Y):
     
     return db.put({"key":names, "links":links, "districts":districts, "wards":wards, "addresses":addresses, "areas":areas, "bedrooms":bedrooms, "wc":wc,
                    "rates":rates, "schools":schools, "markets":markets, "entertainment":entertainment, "hospitals":hospitals, "restaurants":restaurants,
-                   "buses":buses, "atm":atm})
+                   "buses":buses, "atm":atm, "X":X, "Y":Y})
                    
+#insert all
+def insert_all(names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm,X,Y):
+    for (name,link,district,ward,address,area,bedroom,w,rate,school,market,entertain,hospital,restaurant,bus,at,x,y) in zip (names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm,X,Y):
+        insert_apartments(name,link,district,ward,address,area,bedroom,w,rate,school,market,entertain,hospital,restaurant,bus,at,x,y)
 
-def insert_all(names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm):
-    for (name,link,district,ward,address,area,bedroom,w,rate,school,market,entertain,hospital,restaurant,bus,at) in zip (names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm):
-        insert_apartments(name,link,district,ward,address,area,bedroom,w,rate,school,market,entertain,hospital,restaurant,bus,at)
-
+#fetch all apartments from database
 def fetch_all_apartments():
     
     res = db.fetch()
     return res.items
 
+#get an apartment from database
 def get_apartments(apartment):
     
     return db.get(apartment)
 
-df = pd.read_csv('Database.csv')
-df = np.array(df)
+#delete an apartment from database
+def delete_apartments(apartment):
+    
+    return db.delete(apartment)
 
+#Pre-processing data
+df = pd.read_csv('Database.csv')
+
+df = np.array(df)
 #
 names = list(df[:,0])
 links = list(df[:,1])
@@ -52,6 +61,8 @@ hospitals = list(df[:,12])
 restaurants = list(df[:,13])
 buses = list(df[:,14]) 
 atm = list(df[:,15])
+X = list(df[:,16])
+Y = list(df[:,17])
 
 #
-insert_all(names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm)
+insert_all(names,links,districts,wards,addresses,areas,bedrooms,wc,rates,schools,markets,entertainment,hospitals,restaurants,buses,atm,X,Y)
