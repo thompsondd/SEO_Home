@@ -8,6 +8,7 @@ import webbrowser
 from PIL import Image
 import database as db
 import streamlit_nested_layout
+import backend
 
 def check1(us, col, c):
     temp1 = np.array(us[col].split("-")).astype(float)
@@ -85,7 +86,8 @@ if submitted:
         st.warning("CHỌN QUẬN")
     else:
 
-        user = db.fetch_all_apartments()    
+        user = db.fetch_all_apartments()
+        #print(f"USER: {user}")    
         if "Select All" in quan:
                 quan = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
                 'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
