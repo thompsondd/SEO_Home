@@ -205,6 +205,7 @@ class Manage:
                 self.recommend_list["ch"].append(ich)
                 self.recommend_list["score"].append(listR["score"][listR["ch"].index(ich)])
         accept = np.argsort(self.recommend_list["score"])
+        accept = [accept[i] for i in range(len(accept)-1,-1,-1)]
         newReL = {"ch":[],"score":[]}
         for index in accept[:min(len(accept),self.n_re)]:
             newReL["ch"].append(self.recommend_list["ch"][index])
