@@ -42,8 +42,13 @@ st.set_page_config(
 )
 
 
-st.balloons()
+#st.balloons()
 col1, col2, col3 = st.columns((2,4,4))
+if "select_all_dict" not in st.session_state:
+    st.session_state["select_all_dict"]=False
+    #st.session_state.disabled = False
+def change_state():
+    st.session_state["select_all_dict"]=not st.session_state["select_all_dict"]
 with col1:
     st.image(Image.open('logo.png'), width=250)
 with col2:
@@ -77,8 +82,7 @@ with st.form("first_form"):
                 priority["market_p"] = st.slider("Số lượng nơi mua sách trong khu vực",1,10, step=1, key="market",value=8)
             with c5:
                 priority["entertainment_p"] = st.slider("Số lượng nơi mua sắm trong khu vực",1,10, step=1, key="entertainment",value=8)
-        
-
+    
     col1, col2, col3 = st.columns((1,1,1))
     with col1:
         quan = st.multiselect(
@@ -87,11 +91,11 @@ with st.form("first_form"):
                 'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
                 'Hóc Môn', 'Bình Chánh', 'Nhà Bè', 'Củ Chi'))
     with col2:
-        bottom_money = st.selectbox('Giá thấp nhất (triệu vnd)', ('Giá thấp nhất',20,40,60,80,100))
+        bottom_money = st.selectbox('Giá thấp nhất (triệu/m²)', ('Giá thấp nhất',20,40,60,80,100))
         if bottom_money == 'Giá thấp nhất':
             bottom_money = 0 
     with col3:
-        top_money = st.selectbox('Giá cao nhất (triệu vnd)', ('Giá cao nhất', 120, 140, 160, 180, 200))
+        top_money = st.selectbox('Giá cao nhất (triệu/m²)', ('Giá cao nhất', 120, 140, 160, 180, 200))
         if top_money == 'Giá cao nhất':
             top_money = 200
     
@@ -104,14 +108,10 @@ with st.form("first_form"):
         vs = st.selectbox('Số phòng vệ sinh', (1,2,3))
     submitted = st.form_submit_button("Search")
 
-
 if submitted:
     if not quan:
         st.warning("CHỌN QUẬN")
     else:
-        requirments = {"quan":quan, "top_money":top_money,"bottom_money":bottom_money,
-                       "area":area, "sleep":sleep, "vs":vs, "priority":priority}
-
         with open("logs.py","w") as f:
             #f.writelines(f"data={requirments}")
             pass
@@ -132,14 +132,20 @@ if submitted:
             temp2.sort()
             if len(temp1) != 0 and len(temp2) != 0:
                 quan = np.concatenate((temp2,temp1))
-            
+
+        requirments = {"quan":quan, "top_money":top_money,"bottom_money":bottom_money,
+                       "area":area, "sleep":sleep, "vs":vs, "priority":priority}
         huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
         search_result, recommendList = seo.search(requirments)
-        with st.expander("Danh sách căn hộ tìm được theo yêu cầu"):
+        t1,t2 = st.tabs(["Tìm Kiếm","Gợi ý"])
+        #with st.expander("Danh sách căn hộ tìm được theo yêu cầu"):
+        with t1:
             distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
             for i,tabs in zip(quan,distric_tab):
                 #Search
-                dis =  search_result[i]                         
+                dis =  search_result.get(i,None)
+                if dis==None:
+                    continue                         
                 with tabs:
                     if i not in huyen:
                         st.header('Quận ' + i)
@@ -207,7 +213,8 @@ if submitted:
                                         st.write(a) 
                             st.write('- - - - - - - - - - - - - - - - - - ')
         
-        with st.expander("Danh sách căn hộ gợi ý theo yêu cầu"):
+        #with st.expander("Danh sách căn hộ gợi ý theo yêu cầu"):
+        with t2:
             for d in recommendList: 
                 width = 500
                 col1, col2 = st.columns((1,1))
