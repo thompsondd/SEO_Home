@@ -19,6 +19,7 @@ class CanHo:
         self.name = info["key"]
         self.toado = (info["X"], info["Y"])
         self.convDataKeys = ["rates","bedrooms","wc","areas"]
+        self.NN={"ch":[],"dis":[]}
         self.convertData()
 
     def __eq__(self, __o: object) -> bool:
@@ -41,6 +42,14 @@ class CanHo:
     def __str__(self):
         return self.name
 
+    def scoreIntSet(self,num,set):
+        if set[0]<= num <= set[1]:
+            return 1
+        return 1/np.float_power(min(abs(num-set[0]),abs(num - set[1])),2)
+    def score2Set(self,set1,set2):
+        a = np.power(set1[0]-set2[0],2)
+        b = np.power(set1[1]-set2[1],2)
+        return 1/(a+b)
     def setQuan(self, quan:object):
         self.inQuan = quan
     def setPhuong(self, phuong:object):
@@ -52,7 +61,6 @@ class CanHo:
         c=a-b
         return np.sqrt(c[0]*c[0]+c[1]*c[1])
     def getNN(self):
-        self.NN={"ch":[],"dis":[]}
         tempC = []
         tempD = []
         for quanNN in self.inQuan.NN:
@@ -63,13 +71,50 @@ class CanHo:
         for idx in np.argsort(tempD)[:min(3,len(tempD))]:
             if tempC[idx] in self.NN["ch"]:
                 if tempD[idx] < self.NN["dis"][self.NN["ch"].index(tempC[idx])]:
-                    self.NN.update({tempC[idx]:tempD[idx]})
+                    self.NN["dis"][self.NN["ch"].index(tempC[idx])]=tempD[idx]
             else:
                 self.NN["ch"].append(tempC[idx])
                 self.NN["dis"].append(tempD[idx])
         return self.NN["ch"]
-    def getScore(self,query,weight):
-        pass
+    def calScore(self,canho,query,weight,dis):
+        #{'location_p': 10, 'price_p': 10, 'area_p': 7, 'sleep_p': 8,
+        # 'wc_p': 8, 'school_p': 8, 'market_p': 8, 'entertainment_p': 8
+        #}
+        score = np.array([   1/np.exp(dis), 
+                    self.score2Set([query["bottom_money"],query["top_money"]],canho.getData("rates")),
+                    self.score2Set(query["area"],canho.getData("areas")),
+                    self.scoreIntSet(query["sleep"],canho.getData("bedrooms")),
+                    self.scoreIntSet(query["vs"],canho.getData("wc")),
+                    canho.getData("schools"),
+                    canho.getData("markets"),
+                    canho.getData("entertainment"),
+                ])
+        weight_ = np.array(list(weight.values()))
+        score = np.dot(score.T,weight_)
+        s = ["hospitals","restaurants","buses","atm"]
+        ss = 0
+        for i in s:
+            ss+=canho.getData(i)
+        return 0.99*score + 0.01*ss
+    def getNNScore(self,query,weight):
+        if self.NN["ch"]==[] or self.NN["dis"]==[]:
+            self.getNN()
+        scoreList={"ch":[self],"score":[self.calScore(self,query,weight,0)]}
+        tempC = []
+        tempD = []
+        for quanNN in self.inQuan.NN:
+            for phuongNN in quanNN.listPhuong.keys():
+                for canho in quanNN.listPhuong[phuongNN].listCanHo:
+                    tempC.append(canho)
+                    tempD.append(self.calScore(self,query,weight,self.distance(self.toado, canho.toado)))
+        for idx in np.argsort(tempD)[:min(3,len(tempD))]:
+            if tempC[idx] in scoreList["ch"]:
+                if tempD[idx] < scoreList["dis"][scoreList["ch"].index(tempC[idx])]:
+                    scoreList["score"][scoreList["ch"].index(tempC[idx])]=tempD[idx]
+            else:
+                scoreList["ch"].append(tempC[idx])
+                scoreList["score"].append(tempD[idx])
+        return scoreList
 class Phuong:
     def __init__(self,name:str):
         self.name=name
@@ -148,14 +193,31 @@ class Manage:
                     if j in self.listQuan.keys():
                         self.listQuan[i].NN.append(self.listQuan[j])
         
-
+    def addRecommend(self,canho,q,w):
+        listR = canho.getNNScore(q,w)
+        for ich in listR["ch"]:
+            if ich in self.recommend_list["ch"]:
+                a = self.recommend_list["score"][self.recommend_list["ch"].index(ich)]
+                b = listR["score"][listR["ch"].index(ich)]
+                if b>a:
+                    self.recommend_list["score"][self.recommend_list["ch"].index(ich)] = b
+            else:
+                self.recommend_list["ch"].append(ich)
+                self.recommend_list["score"].append(listR["score"][listR["ch"].index(ich)])
+        accept = np.argsort(self.recommend_list["score"])
+        newReL = {"ch":[],"score":[]}
+        for index in accept[:min(len(accept),self.n_re)]:
+            newReL["ch"].append(self.recommend_list["ch"][index])
+            newReL["score"].append(self.recommend_list["score"][index])
+        self.recommend_list = newReL
     def search(self, requirments):
         keys = list(requirments.keys())
         query = {key:requirments[key] for key in keys if key!="priority"}
         priority = ProcessData(requirments["priority"])
+        self.n_re = 10
         #Search
         list_canho ={}
-        temp = []
+        self.recommend_list ={"ch":[],"score":[]}
         for quan in query["quan"]:
             quan_obj = self.listQuan[quan]
             list_canho[quan]=[]
@@ -164,30 +226,32 @@ class Manage:
                 phuong_obj = quan_obj.listPhuong[phuong_name]
 
                 for canho in phuong_obj.listCanHo:
-                    temp.extend(canho.getNN())
                     price = canho.getData("rates")
 
                     if query["bottom_money"]>price[0] or query["top_money"]<price[1]:
+                        self.addRecommend(canho,query,priority.data)
                         continue
 
                     areas = canho.getData("areas")
                     if query["area"][0]>areas[0] or query["area"][1]<areas[1]:
+                        self.addRecommend(canho,query,priority.data)
                         continue
 
                     wc = canho.getData("wc")
                     if query["vs"]<wc[0] or query["vs"]>wc[1]:
+                        self.addRecommend(canho,query,priority.data)
                         continue
 
                     bedrooms = canho.getData("bedrooms")
                     if query["sleep"]<bedrooms[0] or query["sleep"]>bedrooms[1]:
+                        self.addRecommend(canho,query,priority.data)
                         continue
 
                     list_canho[quan].append(canho.info)
         #Recommend
-        list_canho_re ={}
         
         #print(list_canho)
-        return list_canho
+        return list_canho,[i.info for i in self.recommend_list["ch"]]
 
 
 data = db.fetch_all_apartments()
