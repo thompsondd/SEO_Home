@@ -216,7 +216,6 @@ class Manage:
         query = {key:requirments[key] for key in keys if key!="priority"}
         priority = ProcessData(requirments["priority"])
         self.n_re = 10
-        #Search
         list_canho ={}
         self.recommend_list ={"ch":[],"score":[]}
         for quan in query["quan"]:
@@ -251,9 +250,6 @@ class Manage:
                         continue
 
                     list_canho[quan].append(canho.info)
-        #Recommend
-        
-        #print(list_canho)
         return list_canho,[i.info for i in self.recommend_list["ch"]]
 
 
