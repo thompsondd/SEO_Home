@@ -8,6 +8,7 @@ import webbrowser
 from PIL import Image
 import database as db
 import streamlit_nested_layout
+import backend
 
 def check1(us, col, c):
     temp1 = np.array(us[col].split("-")).astype(float)
@@ -51,6 +52,33 @@ with col2:
     st.subheader('Your choice, your comfort')
 
 with st.form("first_form"):
+    priority = {}
+    with st.sidebar:
+        st.title("Đánh giá mức độ quan trọng của các tiêu chí")
+        st.subheader("1(Không quan trọng) - 9(Rất quan trọng)")
+
+        priority["location_p"] = st.slider("Vị trí",1,10, step=1, key="location", value=10)
+        priority["price_p"] = st.slider("Giá nhà",1,10, step=1, key="price", value=10)
+        #area_p = st.slider("Diện tích",1,10, step=1, key="area")
+        priority["area_p"] = st.slider("Diện tích",1,10, step=1, key="area", value=7)
+        with st.expander("Tiêu chí về số lượng phòng"):
+            c1,c2 = st.columns(2)
+            with c1:
+                priority["sleep_p"] = st.slider("Số lượng phòng ngủ",1,10, step=1, key="sleep", value=8)
+            with c2:
+                priority["wc_p"] = st.slider("Số lượng nhà vệ sinh",1,10, step=1, key="wc", value=8)
+
+        with st.expander("Môi trường"):
+            #priority["env_p"] = st.slider("Môi trường",1,10, step=1, key="env", value=6)
+            c3,c4,c5 = st.columns(3)
+            with c3:
+                priority["school_p"] = st.slider("Số lượng trường trong khu vực",1,10, step=1, key="school",value=8)
+            with c4:
+                priority["market_p"] = st.slider("Số lượng nơi mua sách trong khu vực",1,10, step=1, key="market",value=8)
+            with c5:
+                priority["entertainment_p"] = st.slider("Số lượng nơi mua sắm trong khu vực",1,10, step=1, key="entertainment",value=8)
+        
+
     col1, col2, col3 = st.columns((1,1,1))
     with col1:
         quan = st.multiselect(
@@ -58,9 +86,6 @@ with st.form("first_form"):
                 ('Select All','1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
                 'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
                 'Hóc Môn', 'Bình Chánh', 'Nhà Bè', 'Củ Chi'))
-        
-        
-        
     with col2:
         bottom_money = st.selectbox('Giá thấp nhất (triệu vnd)', ('Giá thấp nhất',20,40,60,80,100))
         if bottom_money == 'Giá thấp nhất':
@@ -84,8 +109,16 @@ if submitted:
     if not quan:
         st.warning("CHỌN QUẬN")
     else:
+        requirments = {"quan":quan, "top_money":top_money,"bottom_money":bottom_money,
+                       "area":area, "sleep":sleep, "vs":vs, "priority":priority}
 
-        user = db.fetch_all_apartments()    
+        with open("logs.py","w") as f:
+            #f.writelines(f"data={requirments}")
+            pass
+        
+        #user = db.fetch_all_apartments()
+        #print(f"USER: {user}")
+        seo = backend.Manager    
         if "Select All" in quan:
                 quan = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
                 'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
@@ -102,16 +135,10 @@ if submitted:
             
         huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
         distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
-        
+        search_result = seo.search(requirments)
         for i,tabs in zip(quan,distric_tab):
-            dis = []
-            for us in user:
-                if (us['districts'] == i):
-                    if(check1(us,'rates',[bottom_money, top_money])):
-                        if(check1(us,'areas',area)):
-                            if(check2(us,'wc',vs)):
-                                if(check2(us,'bedrooms',sleep)):
-                                    dis.append(us)
+            #Search
+            dis =  search_result[i]                         
             with tabs:
                 if i not in huyen:
                     st.header('Quận ' + i)
@@ -184,10 +211,10 @@ if submitted:
         
             
 
-url = 'https://youtu.be/'
-url_= 'dQw4w9WgXcQ'
-
-if st.button('_do not click_ **this**'):
-    webbrowser.open_new_tab(url+url_)
-    st.caption('i told ya')
+#url = 'https://youtu.be/'
+#url_= 'dQw4w9WgXcQ'
+#
+#if st.button('_do not click_ **this**'):
+#    webbrowser.open_new_tab(url+url_)
+#    st.caption('i told ya')
 
