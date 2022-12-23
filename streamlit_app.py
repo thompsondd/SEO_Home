@@ -137,9 +137,9 @@ if submitted:
                        "area":area, "sleep":sleep, "vs":vs, "priority":priority}
         huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
         search_result, recommendList = seo.search(requirments)
-        t1,t2 = st.tabs(["Tìm Kiếm","Gợi ý"])
-        #with st.expander("Danh sách căn hộ tìm được theo yêu cầu"):
-        with t1:
+        #t1,t2 = st.tabs(["Tìm Kiếm","Gợi ý"])
+        with st.expander("Danh sách căn hộ tìm được theo yêu cầu"):
+        #with t1:
             distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
             for i,tabs in zip(quan,distric_tab):
                 #Search
@@ -213,8 +213,8 @@ if submitted:
                                         st.write(a) 
                             st.write('- - - - - - - - - - - - - - - - - - ')
         
-        #with st.expander("Danh sách căn hộ gợi ý theo yêu cầu"):
-        with t2:
+        with st.expander("Danh sách căn hộ gợi ý theo yêu cầu"):
+        #with t2:
             for d in recommendList: 
                 width = 500
                 col1, col2 = st.columns((1,1))
