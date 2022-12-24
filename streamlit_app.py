@@ -10,25 +10,6 @@ import database as db
 import streamlit_nested_layout
 import backend
 
-def check1(us, col, c):
-    temp1 = np.array(us[col].split("-")).astype(float)
-    temp1 = np.ceil(temp1).astype(int)
-    if(len(temp1) > 1):
-        if temp1[0] in range(c[0],c[1]+1) and temp1[1] in range(c[0],c[1]+1):
-            return True
-    else:
-        if temp1 in range(c[0],c[1]+1) and temp1 in range(c[0],c[1]+1):
-            return True
-    
-    return False
-
-def check2(us, col, c):
-    temp1 = np.array(us[col].split("-")).astype(int)
-    if c in range(temp1[0],temp1[1]+1):
-        return True
-    
-    return False
-
 st.set_page_config(
     page_title="Home Ai Search",
     page_icon="🧊",
@@ -44,11 +25,14 @@ st.set_page_config(
 
 #st.balloons()
 col1, col2, col3 = st.columns((2,4,4))
-if "select_all_dict" not in st.session_state:
-    st.session_state["select_all_dict"]=False
+
     #st.session_state.disabled = False
-def change_state():
-    st.session_state["select_all_dict"]=not st.session_state["select_all_dict"]
+def get_and_set_time(time_now):
+    if "time_searching" not in st.session_state:
+        st.session_state["time_searching"] = time_now
+    temp = st.session_state["time_searching"]
+    st.session_state["time_searching"] = time_now
+    return temp
 with col1:
     st.image(Image.open('logo.png'), width=250)
 with col2:
@@ -134,141 +118,145 @@ if submitted:
         requirments = {"quan":quan, "top_money":top_money,"bottom_money":bottom_money,
                        "area":area, "sleep":sleep, "vs":vs, "priority":priority}
         huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
+        start = time.time()
         search_result, recommendList = seo.search(requirments)
+        end = time.time()
         #t1,t2 = st.tabs(["Tìm Kiếm","Gợi ý"])
+        timeSearch = end-start
+        st.metric("Search Time", str(timeSearch)+"s", str(get_and_set_time(timeSearch)-timeSearch)+"s")
         with st.expander("Danh sách căn hộ tìm được theo yêu cầu"):
-        #with t1:
-            distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
-            for i,tabs in zip(quan,distric_tab):
-                #Search
-                dis =  search_result.get(i,None)
-                if dis==None:
-                    continue                         
-                with tabs:
-                    if i not in huyen:
-                        st.header('Quận ' + i)
-                    else:
-                        st.header('Huyện  ' + i)
-                    if (len(dis)==0):
-                        st.write("Không tìm thấy dữ liệu phù hợp!")
-                    else:
-                        for d in dis: 
-                            width = 500
-                            col1, col2 = st.columns((1,1))
-                            with col1:
-                                st.image(d['links'],width=width)
-                            with col2:
-                                st.subheader(d['key'])
-                                st.info(d['addresses'] + ", Phường " + d['wards'] + (", Quận " + d['districts'] if d['districts'] not in huyen else f", Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
-
-                                col1, col2, col3, col4 = st.columns((1.3,1,1,1.7))
+            #with t1:
+                distric_tab = st.tabs(list(map(lambda x: f"Quận {x}" if x not in huyen else f"Huyện {x}",quan)))
+                for i,tabs in zip(quan,distric_tab):
+                    #Search
+                    dis =  search_result.get(i,None)
+                    if dis==None:
+                        continue                         
+                    with tabs:
+                        if i not in huyen:
+                            st.header('Quận ' + i)
+                        else:
+                            st.header('Huyện  ' + i)
+                        if (len(dis)==0):
+                            st.write("Không tìm thấy dữ liệu phù hợp!")
+                        else:
+                            for d in dis: 
+                                width = 500
+                                col1, col2 = st.columns((1,1))
                                 with col1:
-                                    st.info(d['areas'] + ' m²',icon='🛋')
+                                    st.image(d['links'],width=width)
                                 with col2:
-                                    st.success(d['bedrooms'],icon='🛏️')
-                                with col3:
-                                    st.warning(d['wc'],icon='🛁')
-                                with col4:
-                                    st.error(d['rates'] + " triệu/m²",icon='💲')
+                                    st.subheader(d['key'])
+                                    st.info(d['addresses'] + ", Phường " + d['wards'] + (", Quận " + d['districts'] if d['districts'] not in huyen else f", Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
 
-                                with st.expander('Những tiện ích xung quanh'):
-                                    col1, col2, col3, col4 = st.columns((3,1,3,1))
+                                    col1, col2, col3, col4 = st.columns((1.3,1,1,1.7))
                                     with col1:
-                                        st.markdown('Số trường học: ')
-                                        st.write('- - - - - - - - - - - - - - - - - - ')
+                                        st.info(d['areas'] + ' m²',icon='🛋')
                                     with col2:
-                                        a=d['schools']
-                                        st.write(a)
+                                        st.success(d['bedrooms'],icon='🛏️')
                                     with col3:
-                                        st.markdown('Số trạm xe bus: ')
-                                        st.write('- - - - - - - - - - - - - - - - - - ')
+                                        st.warning(d['wc'],icon='🛁')
                                     with col4:
-                                        a=d['buses']
-                                        st.write(a)
-                                    col1, col2, col3, col4 = st.columns((3,1,3,1))
-                                    with col1:
-                                        st.markdown('Số siêu thị: ')
-                                        st.write('- - - - - - - - - - - - - - - - - - ')
-                                    with col2:
-                                        a=d['markets']
-                                        st.write(a)
-                                    with col3:
-                                        st.markdown('Số trạm nhà hàng: ')
-                                        st.write('- - - - - - - - - - - - - - - - - - ')
-                                    with col4:
-                                        a=d['restaurants']
-                                        st.write(a)
-                                    col1, col2, col3, col4 = st.columns((3,1,3,1))
-                                    with col1:
-                                        st.markdown('Số cây ATM: ')
-                                    with col2:
-                                        a=d['atm']
-                                        st.write(a)
-                                    with col3:
-                                        st.markdown('Số cơ sở y tế: ')
-                                    with col4:
-                                        a=d['hospitals']
-                                        st.write(a) 
-                            st.write('- - - - - - - - - - - - - - - - - - ')
+                                        st.error(d['rates'] + " triệu/m²",icon='💲')
+
+                                    with st.expander('Những tiện ích xung quanh'):
+                                        col1, col2, col3, col4 = st.columns((3,1,3,1))
+                                        with col1:
+                                            st.markdown('Số trường học: ')
+                                            st.write('- - - - - - - - - - - - - - - - - - ')
+                                        with col2:
+                                            a=d['schools']
+                                            st.write(a)
+                                        with col3:
+                                            st.markdown('Số trạm xe bus: ')
+                                            st.write('- - - - - - - - - - - - - - - - - - ')
+                                        with col4:
+                                            a=d['buses']
+                                            st.write(a)
+                                        col1, col2, col3, col4 = st.columns((3,1,3,1))
+                                        with col1:
+                                            st.markdown('Số siêu thị: ')
+                                            st.write('- - - - - - - - - - - - - - - - - - ')
+                                        with col2:
+                                            a=d['markets']
+                                            st.write(a)
+                                        with col3:
+                                            st.markdown('Số trạm nhà hàng: ')
+                                            st.write('- - - - - - - - - - - - - - - - - - ')
+                                        with col4:
+                                            a=d['restaurants']
+                                            st.write(a)
+                                        col1, col2, col3, col4 = st.columns((3,1,3,1))
+                                        with col1:
+                                            st.markdown('Số cây ATM: ')
+                                        with col2:
+                                            a=d['atm']
+                                            st.write(a)
+                                        with col3:
+                                            st.markdown('Số cơ sở y tế: ')
+                                        with col4:
+                                            a=d['hospitals']
+                                            st.write(a) 
+                                st.write('- - - - - - - - - - - - - - - - - - ')
         
         with st.expander("Danh sách căn hộ gợi ý theo yêu cầu"):
-        #with t2:
-            for d in recommendList: 
-                width = 500
-                col1, col2 = st.columns((1,1))
-                with col1:
-                    st.image(d['links'],width=width)
-                with col2:
-                    st.subheader(d['key'])
-                    st.info(d['addresses'] + ", Phường " + d['wards'] + (", Quận " + d['districts'] if d['districts'] not in huyen else f", Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
-                    col1, col2, col3, col4 = st.columns((1.3,1,1,1.7))
+            #with t2:
+                for d in recommendList: 
+                    width = 500
+                    col1, col2 = st.columns((1,1))
                     with col1:
-                        st.info(d['areas'] + ' m²',icon='🛋')
+                        st.image(d['links'],width=width)
                     with col2:
-                        st.success(d['bedrooms'],icon='🛏️')
-                    with col3:
-                        st.warning(d['wc'],icon='🛁')
-                    with col4:
-                        st.error(d['rates'] + " triệu/m²",icon='💲')
-                    with st.expander('Những tiện ích xung quanh'):
-                        col1, col2, col3, col4 = st.columns((3,1,3,1))
+                        st.subheader(d['key'])
+                        st.info(d['addresses'] + ", Phường " + d['wards'] + (", Quận " + d['districts'] if d['districts'] not in huyen else f", Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
+                        col1, col2, col3, col4 = st.columns((1.3,1,1,1.7))
                         with col1:
-                            st.markdown('Số trường học: ')
-                            st.write('- - - - - - - - - - - - - - - - - - ')
+                            st.info(d['areas'] + ' m²',icon='🛋')
                         with col2:
-                            a=d['schools']
-                            st.write(a)
+                            st.success(d['bedrooms'],icon='🛏️')
                         with col3:
-                            st.markdown('Số trạm xe bus: ')
-                            st.write('- - - - - - - - - - - - - - - - - - ')
+                            st.warning(d['wc'],icon='🛁')
                         with col4:
-                            a=d['buses']
-                            st.write(a)
-                        col1, col2, col3, col4 = st.columns((3,1,3,1))
-                        with col1:
-                            st.markdown('Số siêu thị: ')
-                            st.write('- - - - - - - - - - - - - - - - - - ')
-                        with col2:
-                            a=d['markets']
-                            st.write(a)
-                        with col3:
-                            st.markdown('Số trạm nhà hàng: ')
-                            st.write('- - - - - - - - - - - - - - - - - - ')
-                        with col4:
-                            a=d['restaurants']
-                            st.write(a)
-                        col1, col2, col3, col4 = st.columns((3,1,3,1))
-                        with col1:
-                            st.markdown('Số cây ATM: ')
-                        with col2:
-                            a=d['atm']
-                            st.write(a)
-                        with col3:
-                            st.markdown('Số cơ sở y tế: ')
-                        with col4:
-                            a=d['hospitals']
-                            st.write(a) 
-                st.write('- - - - - - - - - - - - - - - - - - ')
+                            st.error(d['rates'] + " triệu/m²",icon='💲')
+                        with st.expander('Những tiện ích xung quanh'):
+                            col1, col2, col3, col4 = st.columns((3,1,3,1))
+                            with col1:
+                                st.markdown('Số trường học: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col2:
+                                a=d['schools']
+                                st.write(a)
+                            with col3:
+                                st.markdown('Số trạm xe bus: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col4:
+                                a=d['buses']
+                                st.write(a)
+                            col1, col2, col3, col4 = st.columns((3,1,3,1))
+                            with col1:
+                                st.markdown('Số siêu thị: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col2:
+                                a=d['markets']
+                                st.write(a)
+                            with col3:
+                                st.markdown('Số trạm nhà hàng: ')
+                                st.write('- - - - - - - - - - - - - - - - - - ')
+                            with col4:
+                                a=d['restaurants']
+                                st.write(a)
+                            col1, col2, col3, col4 = st.columns((3,1,3,1))
+                            with col1:
+                                st.markdown('Số cây ATM: ')
+                            with col2:
+                                a=d['atm']
+                                st.write(a)
+                            with col3:
+                                st.markdown('Số cơ sở y tế: ')
+                            with col4:
+                                a=d['hospitals']
+                                st.write(a) 
+                    st.write('- - - - - - - - - - - - - - - - - - ')
 
 #url = 'https://youtu.be/'
 #url_= 'dQw4w9WgXcQ'

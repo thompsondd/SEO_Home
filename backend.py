@@ -2,12 +2,13 @@ from typing import *
 import database as db
 from tqdm import tqdm
 import numpy as np
-
+from numba import jit
 class ProcessData:
     def __init__(self,data:dict):
         self.data = data.copy()
         self.process()
-        
+    
+    @jit(parallel = True)
     def process(self):
         sum=np.sum(list(self.data["main"].values()))
 
@@ -43,6 +44,7 @@ class CanHo:
     def __eq__(self, __o: object) -> bool:
         return self.name==__o.name
 
+    @jit(parallel = True)
     def convertData(self):
         self.convertedData={}
         for i in self.convDataKeys:
@@ -73,11 +75,13 @@ class CanHo:
     def setPhuong(self, phuong:object):
         self.inPhuong = phuong
 
+    @jit(parallel = True)
     def distance(self,toadoA, toadoB):
         a = np.array(toadoA).astype(np.float64)
         b = np.array(toadoB).astype(np.float64)
         c=a-b
         return np.sqrt(c[0]*c[0]+c[1]*c[1])
+    @jit(parallel = True)
     def getNN(self):
         tempC = []
         tempD = []
@@ -94,6 +98,7 @@ class CanHo:
                 self.NN["ch"].append(tempC[idx])
                 self.NN["dis"].append(tempD[idx])
         return self.NN["ch"]
+    @jit(parallel = True)
     def calScore(self,canho,query,weight,dis):
         #{'location_p': 10, 'price_p': 10, 'area_p': 7, 'sleep_p': 8,
         # 'wc_p': 8, 'school_p': 8, 'market_p': 8, 'entertainment_p': 8
@@ -114,6 +119,7 @@ class CanHo:
         for i in s:
             ss+=canho.getData(i)
         return 0.99*score + 0.01*ss
+    @jit(parallel = True)
     def getNNScore(self,query,weight):
         if self.NN["ch"]==[] or self.NN["dis"]==[]:
             self.getNN()
@@ -193,8 +199,9 @@ class Manage:
         if quanName not in list(self.listQuan.keys()):
             self.addNewQuan(quanName)
         return self.listQuan[quanName]
+    @jit(parallel = True)
     def addNewCanHo(self):
-        for data_CanHo in tqdm(self.data):
+        for data_CanHo in self.data:
             canHo = CanHo(data_CanHo)
             quan = self.getQuan(data_CanHo["districts"])
             phuong = quan.getPhuong(data_CanHo["wards"])
@@ -210,7 +217,7 @@ class Manage:
                 for j in self.infoNN[i]:
                     if j in self.listQuan.keys():
                         self.listQuan[i].NN.append(self.listQuan[j])
-        
+    @jit(parallel = True)
     def addRecommend(self,canho,q,w):
         listR = canho.getNNScore(q,w)
         for ich in listR["ch"]:
@@ -229,6 +236,7 @@ class Manage:
             newReL["ch"].append(self.recommend_list["ch"][index])
             newReL["score"].append(self.recommend_list["score"][index])
         self.recommend_list = newReL
+    @jit(parallel = True)
     def search(self, requirments):
         keys = list(requirments.keys())
         query = {key:requirments[key] for key in keys if key!="priority"}
