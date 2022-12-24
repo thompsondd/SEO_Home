@@ -112,7 +112,7 @@ if submitted:
             temp2.sort()
             if len(temp1) != 0 and len(temp2) != 0:
                 quan = np.concatenate((temp2,temp1))
-            quan.sort()
+            #quan.sort()
                 #print(quan)
 
         requirments = {"quan":quan, "top_money":top_money,"bottom_money":bottom_money,
