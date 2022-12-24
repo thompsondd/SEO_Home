@@ -3,10 +3,10 @@ from deta import Deta
 from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
-
+import streamlit as st
 #
 load_dotenv(".env")
-DETA_KEY = os.getenv("DETA_KEY")
+DETA_KEY = st.secrets("DETA_KEY")
 
 deta = Deta(DETA_KEY)
 

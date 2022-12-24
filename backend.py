@@ -254,13 +254,5 @@ class Manage:
 
 
 data = db.fetch_all_apartments()
-#print(f"Căn hộ:\n{data[0]}")
-#requirments = {'quan': ['1', '6', '3'], 'top_money': 200, 'bottom_money': 60, 
-#               'area': (0, 500), 'sleep': 1, 'vs': 1, 
-#               'priority': {'location_p': 10, 'price_p': 10, 'area_p': 7, 'sleep_p': 8,
-#                            'wc_p': 8, 'school_p': 8, 'market_p': 8, 'entertainment_p': 8
-#                           }
-#            }
-
 Manager = Manage(data)
 Manager.addNewCanHo()
