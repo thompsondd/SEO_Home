@@ -114,12 +114,6 @@ if submitted:
     if not quan:
         st.warning("CHỌN QUẬN")
     else:
-        with open("logs.py","w") as f:
-            #f.writelines(f"data={requirments}")
-            pass
-        
-        #user = db.fetch_all_apartments()
-        #print(f"USER: {user}")
         seo = backend.Manager    
         if "Select All" in quan:
                 quan = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
@@ -134,6 +128,8 @@ if submitted:
             temp2.sort()
             if len(temp1) != 0 and len(temp2) != 0:
                 quan = np.concatenate((temp2,temp1))
+            quan.sort()
+                #print(quan)
 
         requirments = {"quan":quan, "top_money":top_money,"bottom_money":bottom_money,
                        "area":area, "sleep":sleep, "vs":vs, "priority":priority}
