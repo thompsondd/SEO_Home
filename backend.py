@@ -9,10 +9,28 @@ class ProcessData:
         self.process()
         
     def process(self):
-        sum=np.sum(list(self.data.values()))
-        for i in list(self.data.keys()):
-            self.data[i]=self.data[i]/sum
+        sum=np.sum(list(self.data["main"].values()))
 
+        for i in list(self.data["main"].keys()):
+            self.data["main"][i]=self.data["main"][i]/sum
+
+        for sub,dataSub in self.data["sub"].items():
+            sum = np.sum(list(dataSub.values()))
+            for k in self.data["sub"][sub].keys():
+                self.data["sub"][sub][k]=self.data["sub"][sub][k]*self.data["main"][sub]/sum
+        order = ['location_p', 'price_p', 'area_p', 'sleep_p',
+         'wc_p', 'school_p', 'market_p', 'entertainment_p']
+        temp = {}
+        for i in order:
+            if i in self.data["main"].keys():
+                d = self.data["main"][i]
+            else:
+                for sub in self.data["sub"].keys():
+                    if i in self.data["sub"][sub].keys():
+                        d = self.data["sub"][sub][i]
+                        break
+            temp.update({i:d})
+        self.data = temp
 class CanHo:
     def __init__(self, info:dict):
         self.info = info
@@ -80,7 +98,7 @@ class CanHo:
         #{'location_p': 10, 'price_p': 10, 'area_p': 7, 'sleep_p': 8,
         # 'wc_p': 8, 'school_p': 8, 'market_p': 8, 'entertainment_p': 8
         #}
-        score = np.array([   1/np.exp(dis), 
+        score = np.array([  1/np.exp(dis), 
                     self.score2Set([query["bottom_money"],query["top_money"]],canho.getData("rates")),
                     self.score2Set(query["area"],canho.getData("areas")),
                     self.scoreIntSet(query["sleep"],canho.getData("bedrooms")),

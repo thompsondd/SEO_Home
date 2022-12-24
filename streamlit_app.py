@@ -57,31 +57,33 @@ with col2:
     st.subheader('Your choice, your comfort')
 
 with st.form("first_form"):
-    priority = {}
+    priority = {"main":{},"sub":{}}
     with st.sidebar:
         st.title("Đánh giá mức độ quan trọng của các tiêu chí")
         st.subheader("1(Không quan trọng) - 10(Rất quan trọng)")
 
-        priority["location_p"] = st.slider("Vị trí",1,10, step=1, key="location", value=10)
-        priority["price_p"] = st.slider("Giá nhà",1,10, step=1, key="price", value=10)
-        #area_p = st.slider("Diện tích",1,10, step=1, key="area")
-        priority["area_p"] = st.slider("Diện tích",1,10, step=1, key="area", value=7)
+        priority["main"]["location_p"] = st.slider("Vị trí",1,10, step=1, key="location", value=10)
+        priority["main"]["price_p"] = st.slider("Giá nhà",1,10, step=1, key="price", value=10)
+        priority["main"]["area_p"] = st.slider("Diện tích",1,10, step=1, key="area")
         with st.expander("Tiêu chí về số lượng phòng"):
+            priority["main"]["area_ele_p"] = st.slider("",1,10, step=1, key="area_p", value=7)
             c1,c2 = st.columns(2)
+            priority["sub"]["area_ele_p"]={}
             with c1:
-                priority["sleep_p"] = st.slider("Số lượng phòng ngủ",1,10, step=1, key="sleep", value=8)
+                priority["sub"]["area_ele_p"]["sleep_p"] = st.slider("Số lượng phòng ngủ",1,10, step=1, key="sleep", value=8)
             with c2:
-                priority["wc_p"] = st.slider("Số lượng nhà vệ sinh",1,10, step=1, key="wc", value=8)
+                priority["sub"]["area_ele_p"]["wc_p"] = st.slider("Số lượng nhà vệ sinh",1,10, step=1, key="wc", value=8)
 
         with st.expander("Môi trường"):
-            #priority["env_p"] = st.slider("Môi trường",1,10, step=1, key="env", value=6)
+            priority["main"]["env_p"] = st.slider("",1,10, step=1, key="env", value=6)
             c3,c4,c5 = st.columns(3)
+            priority["sub"]["env_p"]={}
             with c3:
-                priority["school_p"] = st.slider("Số lượng trường trong khu vực",1,10, step=1, key="school",value=8)
+                priority["sub"]["env_p"]["school_p"] = st.slider("Số lượng trường trong khu vực",1,10, step=1, key="school",value=8)
             with c4:
-                priority["market_p"] = st.slider("Số lượng nơi mua sách trong khu vực",1,10, step=1, key="market",value=8)
+                priority["sub"]["env_p"]["market_p"] = st.slider("Số lượng nơi mua sách trong khu vực",1,10, step=1, key="market",value=8)
             with c5:
-                priority["entertainment_p"] = st.slider("Số lượng nơi mua sắm trong khu vực",1,10, step=1, key="entertainment",value=8)
+                priority["sub"]["env_p"]["entertainment_p"] = st.slider("Số lượng nơi mua sắm trong khu vực",1,10, step=1, key="entertainment",value=8)
     
     col1, col2, col3 = st.columns((1,1,1))
     with col1:
