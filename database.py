@@ -6,7 +6,10 @@ import numpy as np
 import streamlit as st
 #
 load_dotenv(".env")
-DETA_KEY = st.secrets["DETA_KEY"]
+try:
+    DETA_KEY = os.getenv("DETA_KEY")
+except:
+    DETA_KEY = st.secrets["DETA_KEY"]
 
 deta = Deta(DETA_KEY)
 
