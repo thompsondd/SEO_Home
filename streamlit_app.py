@@ -27,15 +27,21 @@ st.set_page_config(
 col1, col2, col3 = st.columns((2,4,4))
 
     #st.session_state.disabled = False
+if "seo" not in st.session_state:
+    st.session_state["seo"] = backend.Connect_Backend()
 def get_and_set_time(time_now):
     if "time_searching" not in st.session_state:
         st.session_state["time_searching"] = time_now
+    if "count_search" not in st.session_state:
+        st.session_state["count_search"] = 0
     temp = st.session_state["time_searching"]
     st.session_state["time_searching"] = time_now
+    st.session_state["count_search"] +=1
+    if st.session_state["count_search"]>3:
+        st.session_state["seo"].Update_Database()
     return temp
 
-if "seo" not in st.session_state:
-    st.session_state["seo"] = backend.Connect_Backend()
+
 with col1:
     st.image(Image.open('logo.png'), width=250)
 with col2:
