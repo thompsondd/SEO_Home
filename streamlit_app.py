@@ -39,6 +39,7 @@ def get_and_set_time(time_now):
     st.session_state["count_search"] +=1
     if st.session_state["count_search"]>3:
         st.session_state["seo"].Update_Database()
+        st.session_state["count_search"]=0
     return temp
 
 
