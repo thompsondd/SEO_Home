@@ -243,10 +243,10 @@ class Manage:
         self.recommend_list ={"ch":[],"score":[]}
         for quan in query["quan"]:
             quan_obj = self.listQuan.get(quan,None)
-            list_canho[quan]=[]
             if quan_obj==None:
                 continue
-
+            
+            list_canho[quan]=[]
             for phuong_name in quan_obj.listPhuong.keys():
                 phuong_obj = quan_obj.listPhuong[phuong_name]
 
