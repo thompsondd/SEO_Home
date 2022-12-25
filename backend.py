@@ -2,26 +2,6 @@ from typing import *
 import database as db
 import numpy as np
 
-class AroundEnv:
-    def __init__(self,schools,markets,entertainment,hospitals,restaurants,buses,atm):
-        self.schools = schools
-        self.markets = markets
-        self.entertainments = entertainment
-        self.hospitals = hospitals
-        self.restaurants = restaurants
-        self.buses = buses
-        self.atms = atm
-    def calScore(self,weight_env,weight_ele):
-        sc = 0
-        temp=[]
-        for i in weight_ele.keys():
-            temp.append(i.splie("_")[0]+"s")
-            sc += weight_ele[i]*self.__dict__[temp[-1]]
-        scc = 0
-        for i in self.__dict__.keys():
-            if i not in temp:
-                scc+= self.__dict__[i]
-        return weight_env*(sc*0.999+scc*0.001)
 class ToaDo:
     def __init__(self,x,y):
         self.x = x
@@ -150,10 +130,11 @@ class CanHo:
             ss+=canho.getData(i)
         return score + origin_data["main"]["env_p"]*0.1*ss/0.9
     
-    def getNNScore(self,query,weight):
+    def getNNScore(self,query,weight, include=1):
         if self.NN["ch"]==[] or self.NN["dis"]==[]:
             self.getNN()
-        scoreList={"ch":[self],"score":[self.calScore(self,query,weight,0)]}
+        if include: scoreList={"ch":[self],"score":[self.calScore(self,query,weight,0)]}
+        else: scoreList={"ch":[],"score":[]}
         tempC = []
         tempD = []
         for quanNN in self.inQuan.NN:
@@ -248,7 +229,7 @@ class Manage:
                     if j in self.listQuan.keys():
                         self.listQuan[i].NN.append(self.listQuan[j])
 
-    def addRecommend(self,canho,q,w):
+    def addRecommend(self,canho,q,w, include=1):
         listR = canho.getNNScore(q,w)
         for ich in listR["ch"]:
             if ich in self.recommend_list["ch"]:
@@ -303,7 +284,7 @@ class Manage:
                     if query["sleep"]<bedrooms[0] or query["sleep"]>bedrooms[1]:
                         self.addRecommend(canho,query,priority.data)
                         continue
-
+                    self.addRecommend(canho,query,priority.data,0)
                     list_canho[quan].append(canho.info)
         return list_canho,[i.info for i in self.recommend_list["ch"]]
 
