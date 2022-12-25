@@ -1,11 +1,24 @@
 from typing import *
 import database as db
 import numpy as np
+
+class ToaDo:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+    def __str__(self):
+        return str((self.x,self.y))
+    def __add__(self,toado):
+        return ToaDo(self.x+toado.x,self.y+toado.y)
+    def __sub__(self,toado):
+        return ToaDo(self.x-toado.x,self.y-toado.y)
+    def calDistance(self,todo):
+        temp = self - todo
+        return np.sqrt(temp.x*temp.x+temp.y*temp.y)
 class ProcessData:
     def __init__(self,data:dict):
         self.data = data.copy()
         self.process()
-    
     
     def process(self):
         sum=np.sum(list(self.data["main"].values()))
@@ -34,7 +47,7 @@ class CanHo:
     def __init__(self, info:dict):
         self.info = info
         self.name = info["key"]
-        self.toado = (info["X"], info["Y"])
+        self.toado = ToaDo(info["X"], info["Y"])
         self.convDataKeys = ["rates","bedrooms","wc","areas"]
         self.NN={"ch":[],"dis":[]}
         self.convertData()
@@ -73,11 +86,8 @@ class CanHo:
     def setPhuong(self, phuong:object):
         self.inPhuong = phuong
     
-    def distance(self,toadoA, toadoB):
-        a = np.array(toadoA).astype(np.float64)
-        b = np.array(toadoB).astype(np.float64)
-        c=a-b
-        return np.sqrt(c[0]*c[0]+c[1]*c[1])
+    def distance(self,canho):
+        return self.toado.calDistance(canho.toado)
     
     def getNN(self):
         tempC = []
@@ -86,7 +96,7 @@ class CanHo:
             for phuongNN in quanNN.listPhuong.keys():
                 for canho in quanNN.listPhuong[phuongNN].listCanHo:
                     tempC.append(canho)
-                    tempD.append(self.distance(self.toado, canho.toado))
+                    tempD.append(self.distance(canho))
         for idx in np.argsort(tempD)[:min(3,len(tempD))]:
             if tempC[idx] in self.NN["ch"]:
                 if tempD[idx] < self.NN["dis"][self.NN["ch"].index(tempC[idx])]:
@@ -127,7 +137,7 @@ class CanHo:
             for phuongNN in quanNN.listPhuong.keys():
                 for canho in quanNN.listPhuong[phuongNN].listCanHo:
                     tempC.append(canho)
-                    tempD.append(self.calScore(self,query,weight,self.distance(self.toado, canho.toado)))
+                    tempD.append(self.calScore(self,query,weight,self.distance(canho)))
         for idx in np.argsort(tempD)[:min(3,len(tempD))]:
             if tempC[idx] in scoreList["ch"]:
                 if tempD[idx] < scoreList["dis"][scoreList["ch"].index(tempC[idx])]:
