@@ -245,7 +245,6 @@ class Manage:
             quan_obj = self.listQuan.get(quan,None)
             if quan_obj==None:
                 continue
-            
             list_canho[quan]=[]
             for phuong_name in quan_obj.listPhuong.keys():
                 phuong_obj = quan_obj.listPhuong[phuong_name]
