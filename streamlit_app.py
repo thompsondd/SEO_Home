@@ -33,6 +33,9 @@ def get_and_set_time(time_now):
     temp = st.session_state["time_searching"]
     st.session_state["time_searching"] = time_now
     return temp
+
+if "seo" not in st.session_state:
+    st.session_state["seo"] = backend.Connect_Backend()
 with col1:
     st.image(Image.open('logo.png'), width=250)
 with col2:
@@ -48,7 +51,7 @@ with st.form("first_form"):
 
         priority["main"]["location_p"] = st.slider("Vị trí",1,10, step=1, key="location", value=10)
         priority["main"]["price_p"] = st.slider("Giá nhà",1,10, step=1, key="price", value=10)
-        priority["main"]["area_p"] = st.slider("Diện tích",1,10, step=1, key="area")
+        priority["main"]["area_p"] = st.slider("Diện tích",1,10, step=1, key="area",value=8)
         with st.expander("Tiêu chí về số lượng phòng"):
             priority["main"]["area_ele_p"] = st.slider("",1,10, step=1, key="area_p", value=7)
             c1,c2 = st.columns(2)
@@ -98,7 +101,6 @@ if submitted:
     if not quan:
         st.warning("CHỌN QUẬN")
     else:
-        seo = backend.Manager    
         if "Select All" in quan:
                 quan = ('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 
                 'Tân Bình', 'Bình Tân', 'Tân Phú', 'Bình Thạnh', 'Gò Vấp', 'Phú Nhuận',
@@ -119,7 +121,7 @@ if submitted:
                        "area":area, "sleep":sleep, "vs":vs, "priority":priority}
         huyen = ['Nhà Bè', 'Củ Chi','Hóc Môn', 'Bình Chánh']
         start = time.time()
-        search_result, recommendList = seo.search(requirments)
+        search_result, recommendList = st.session_state.seo.Manager.search(requirments)
         end = time.time()
         #t1,t2 = st.tabs(["Tìm Kiếm","Gợi ý"])
         timeSearch = end-start

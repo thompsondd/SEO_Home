@@ -1,14 +1,12 @@
 from typing import *
 import database as db
-from tqdm import tqdm
 import numpy as np
-from numba import jit
 class ProcessData:
     def __init__(self,data:dict):
         self.data = data.copy()
         self.process()
     
-    @jit(parallel = True)
+    
     def process(self):
         sum=np.sum(list(self.data["main"].values()))
 
@@ -44,7 +42,7 @@ class CanHo:
     def __eq__(self, __o: object) -> bool:
         return self.name==__o.name
 
-    @jit(parallel = True)
+    
     def convertData(self):
         self.convertedData={}
         for i in self.convDataKeys:
@@ -74,14 +72,13 @@ class CanHo:
         self.inQuan = quan
     def setPhuong(self, phuong:object):
         self.inPhuong = phuong
-
-    @jit(parallel = True)
+    
     def distance(self,toadoA, toadoB):
         a = np.array(toadoA).astype(np.float64)
         b = np.array(toadoB).astype(np.float64)
         c=a-b
         return np.sqrt(c[0]*c[0]+c[1]*c[1])
-    @jit(parallel = True)
+    
     def getNN(self):
         tempC = []
         tempD = []
@@ -98,20 +95,20 @@ class CanHo:
                 self.NN["ch"].append(tempC[idx])
                 self.NN["dis"].append(tempD[idx])
         return self.NN["ch"]
-    @jit(parallel = True)
+    
     def calScore(self,canho,query,weight,dis):
         #{'location_p': 10, 'price_p': 10, 'area_p': 7, 'sleep_p': 8,
         # 'wc_p': 8, 'school_p': 8, 'market_p': 8, 'entertainment_p': 8
         #}
-        score = np.array([  1/np.exp(dis), 
-                    self.score2Set([query["bottom_money"],query["top_money"]],canho.getData("rates")),
-                    self.score2Set(query["area"],canho.getData("areas")),
-                    self.scoreIntSet(query["sleep"],canho.getData("bedrooms")),
-                    self.scoreIntSet(query["vs"],canho.getData("wc")),
-                    canho.getData("schools"),
-                    canho.getData("markets"),
-                    canho.getData("entertainment"),
-                ])
+        score = np.array([1/np.exp(dis), 
+                          self.score2Set([query["bottom_money"],query["top_money"]],canho.getData("rates")),
+                          self.score2Set(query["area"],canho.getData("areas")),
+                          self.scoreIntSet(query["sleep"],canho.getData("bedrooms")),
+                          self.scoreIntSet(query["vs"],canho.getData("wc")),
+                          canho.getData("schools"),
+                          canho.getData("markets"),
+                          canho.getData("entertainment"),
+                        ])
         weight_ = np.array(list(weight.values()))
         score = np.dot(score.T,weight_)
         s = ["hospitals","restaurants","buses","atm"]
@@ -119,7 +116,7 @@ class CanHo:
         for i in s:
             ss+=canho.getData(i)
         return 0.99*score + 0.01*ss
-    @jit(parallel = True)
+    
     def getNNScore(self,query,weight):
         if self.NN["ch"]==[] or self.NN["dis"]==[]:
             self.getNN()
@@ -199,7 +196,7 @@ class Manage:
         if quanName not in list(self.listQuan.keys()):
             self.addNewQuan(quanName)
         return self.listQuan[quanName]
-    @jit(parallel = True)
+
     def addNewCanHo(self):
         for data_CanHo in self.data:
             canHo = CanHo(data_CanHo)
@@ -217,7 +214,7 @@ class Manage:
                 for j in self.infoNN[i]:
                     if j in self.listQuan.keys():
                         self.listQuan[i].NN.append(self.listQuan[j])
-    @jit(parallel = True)
+
     def addRecommend(self,canho,q,w):
         listR = canho.getNNScore(q,w)
         for ich in listR["ch"]:
@@ -236,7 +233,7 @@ class Manage:
             newReL["ch"].append(self.recommend_list["ch"][index])
             newReL["score"].append(self.recommend_list["score"][index])
         self.recommend_list = newReL
-    @jit(parallel = True)
+    
     def search(self, requirments):
         keys = list(requirments.keys())
         query = {key:requirments[key] for key in keys if key!="priority"}
@@ -278,7 +275,12 @@ class Manage:
                     list_canho[quan].append(canho.info)
         return list_canho,[i.info for i in self.recommend_list["ch"]]
 
-
-data = db.fetch_all_apartments()
-Manager = Manage(data)
-Manager.addNewCanHo()
+class Connect_Backend():
+    def __init__(self):
+        self.data = db.fetch_all_apartments()
+        self.Manager = Manage(self.data)
+        self.Manager.addNewCanHo()
+    def Update_Database(self):
+        self.data = db.fetch_all_apartments()
+        self.Manager = Manage(self.data)
+        self.Manager.addNewCanHo()
