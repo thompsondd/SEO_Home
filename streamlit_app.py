@@ -149,7 +149,7 @@ if submitted:
                                     st.image(d['links'],width=width)
                                 with col2:
                                     st.subheader(d['key'])
-                                    st.info(d['addresses'] + ", Phường " + d['wards'] + (", Quận " + d['districts'] if d['districts'] not in huyen else f", Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
+                                    st.info(d['addresses'] + (", Phường " + d['wards'] + ", Quận " + d['districts'] if d['districts'] not in huyen else f", Xã {d['wards']}, Huyện {d['districts']}")  + ', Tp.HCM', icon="🏢")
 
                                     col1, col2, col3, col4 = st.columns((1.3,1,1,1.7))
                                     with col1:
