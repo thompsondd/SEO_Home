@@ -53,7 +53,7 @@ with st.form("first_form"):
         priority["main"]["price_p"] = st.slider("Giá nhà",1,10, step=1, key="price", value=10)
         priority["main"]["area_p"] = st.slider("Diện tích",1,10, step=1, key="area",value=8)
         with st.expander("Tiêu chí về số lượng phòng"):
-            priority["main"]["area_ele_p"] = st.slider("",1,10, step=1, key="area_p", value=7)
+            priority["main"]["area_ele_p"] = st.slider(" ",1,10, step=1, key="area_p", value=7)
             c1,c2 = st.columns(2)
             priority["sub"]["area_ele_p"]={}
             with c1:
@@ -62,7 +62,7 @@ with st.form("first_form"):
                 priority["sub"]["area_ele_p"]["wc_p"] = st.slider("Số lượng nhà vệ sinh",1,10, step=1, key="wc", value=8)
 
         with st.expander("Môi trường"):
-            priority["main"]["env_p"] = st.slider("",1,10, step=1, key="env", value=6)
+            priority["main"]["env_p"] = st.slider(" ",1,10, step=1, key="env", value=6)
             c3,c4,c5 = st.columns(3)
             priority["sub"]["env_p"]={}
             with c3:

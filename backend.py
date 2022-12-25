@@ -2,6 +2,26 @@ from typing import *
 import database as db
 import numpy as np
 
+class AroundEnv:
+    def __init__(self,schools,markets,entertainment,hospitals,restaurants,buses,atm):
+        self.schools = schools
+        self.markets = markets
+        self.entertainments = entertainment
+        self.hospitals = hospitals
+        self.restaurants = restaurants
+        self.buses = buses
+        self.atms = atm
+    def calScore(self,weight_env,weight_ele):
+        sc = 0
+        temp=[]
+        for i in weight_ele.keys():
+            temp.append(i.splie("_")[0]+"s")
+            sc += weight_ele[i]*self.__dict__[temp[-1]]
+        scc = 0
+        for i in self.__dict__.keys():
+            if i not in temp:
+                scc+= self.__dict__[i]
+        return weight_env*(sc*0.999+scc*0.001)
 class ToaDo:
     def __init__(self,x,y):
         self.x = x
@@ -25,7 +45,7 @@ class ProcessData:
 
         for i in list(self.data["main"].keys()):
             self.data["main"][i]=self.data["main"][i]/sum
-
+        self.data["main"]["env_p"]*=0.9
         for sub,dataSub in self.data["sub"].items():
             sum = np.sum(list(dataSub.values()))
             for k in self.data["sub"][sub].keys():
@@ -42,12 +62,13 @@ class ProcessData:
                         d = self.data["sub"][sub][i]
                         break
             temp.update({i:d})
-        self.data = temp
+        self.data = [self.data.copy(),temp]
 class CanHo:
     def __init__(self, info:dict):
         self.info = info
         self.name = info["key"]
         self.toado = ToaDo(info["X"], info["Y"])
+        #self.aroundenv = AroundEnv(**{info[i] for i in ["schools","markets","entertainment","hospitals","restaurants","buses","atm"]})
         self.convDataKeys = ["rates","bedrooms","wc","areas"]
         self.NN={"ch":[],"dis":[]}
         self.convertData()
@@ -81,6 +102,7 @@ class CanHo:
         a = np.power(set1[0]-set2[0],2)
         b = np.power(set1[1]-set2[1],2)
         return 1/(a+b)
+
     def setQuan(self, quan:object):
         self.inQuan = quan
     def setPhuong(self, phuong:object):
@@ -110,6 +132,7 @@ class CanHo:
         #{'location_p': 10, 'price_p': 10, 'area_p': 7, 'sleep_p': 8,
         # 'wc_p': 8, 'school_p': 8, 'market_p': 8, 'entertainment_p': 8
         #}
+        origin_data,weight = weight
         score = np.array([1/np.exp(dis), 
                           self.score2Set([query["bottom_money"],query["top_money"]],canho.getData("rates")),
                           self.score2Set(query["area"],canho.getData("areas")),
@@ -125,7 +148,7 @@ class CanHo:
         ss = 0
         for i in s:
             ss+=canho.getData(i)
-        return 0.99*score + 0.01*ss
+        return score + origin_data["main"]["env_p"]*0.1*ss/0.9
     
     def getNNScore(self,query,weight):
         if self.NN["ch"]==[] or self.NN["dis"]==[]:
@@ -175,29 +198,29 @@ class Manage:
         self.listQuan={}
         self.data = infoCanHo
         self.infoNN = {
-            '1' : ['2', '3', '4', '5', '10', 'Bình Thạnh', 'Phú Nhuận' ], 
-            '2' : ['1', '4', '7', '9', 'Bình Thạnh'],
-            '3' : ['1', '5' ,'10', 'Tân Bình', 'Phú Nhuận'],
-            '4' : ['1', '2', '5', '7', '8'],
-            '5' : ['1', '3', '4', '6', '8', '10', '11'], 
-            '6' : ['5', '8', '11', 'Tân Phú', 'Bình Tân'],
-            '7' : ['2', '4', '8', 'Bình Chánh', 'Nhà Bè'],
-            '8' : ['4', '5', '6', '7', 'Bình Tân', 'Bình Chánh'],
-            '9' : ['2'],
-            '10' : ['1', '3', '5', '11', 'Tân Bình'],
-            '11' : ['5', '6', '10', 'Tân Bình', 'Tân Phú'],
-            '12' : ['12', 'Bình Thạnh', 'Gò Vấp', 'Tân Bình', 'Tân Phú', 'Bình Tân'],
-            'Hóc Môn' : ['12', 'Củ Chi', 'Tân Bình', 'Gò Vấp','Bình Chánh'],
-            'Bình Thạnh' : ['1', '2', 'Phú Nhuận', 'Gò Vấp'],
-            'Gò Vấp' : ['12', 'Hóc Môn', 'Bình Thạnh'],
-            'Phú Nhuận' : ['1', '3', 'Bình Thạnh', 'Gò Vấp', 'Tân Bình'],
-            'Tân Bình' : ['3', '10', '11', '12', 'Phú Nhuận', 'Gò Vấp', 'Tân Phú'],
-            'Tân Phú' : ['6', '11', '12', 'Bình Tân'],
-            'Bình Tân' : ['6', '8', '12', 'Tân Phú'],
-            'Nhà Bè' : ['7' , 'Bình Chánh'],
-            'Củ Chi' : ['Hóc Môn'],
-            'Bình Chánh': ['7', '8', 'Nhà Bè', 'Hóc Môn'] 
-        }
+                        '1' : ['2', '3', '4', '5', '10', 'Bình Thạnh', 'Phú Nhuận' ], 
+                        '2' : ['1', '4', '7', '9', 'Bình Thạnh'],
+                        '3' : ['1', '5' ,'10', 'Tân Bình', 'Phú Nhuận'],
+                        '4' : ['1', '2', '5', '7', '8'],
+                        '5' : ['1', '3', '4', '6', '8', '10', '11'], 
+                        '6' : ['5', '8', '11', 'Tân Phú', 'Bình Tân'],
+                        '7' : ['2', '4', '8', 'Bình Chánh', 'Nhà Bè'],
+                        '8' : ['4', '5', '6', '7', 'Bình Tân', 'Bình Chánh'],
+                        '9' : ['2'],
+                        '10' : ['1', '3', '5', '11', 'Tân Bình'],
+                        '11' : ['5', '6', '10', 'Tân Bình', 'Tân Phú'],
+                        '12' : ['12', 'Bình Thạnh', 'Gò Vấp', 'Tân Bình', 'Tân Phú', 'Bình Tân'],
+                        'Hóc Môn' : ['12', 'Củ Chi', 'Tân Bình', 'Gò Vấp','Bình Chánh'],
+                        'Bình Thạnh' : ['1', '2', 'Phú Nhuận', 'Gò Vấp'],
+                        'Gò Vấp' : ['12', 'Hóc Môn', 'Bình Thạnh'],
+                        'Phú Nhuận' : ['1', '3', 'Bình Thạnh', 'Gò Vấp', 'Tân Bình'],
+                        'Tân Bình' : ['3', '10', '11', '12', 'Phú Nhuận', 'Gò Vấp', 'Tân Phú'],
+                        'Tân Phú' : ['6', '11', '12', 'Bình Tân'],
+                        'Bình Tân' : ['6', '8', '12', 'Tân Phú'],
+                        'Nhà Bè' : ['7' , 'Bình Chánh'],
+                        'Củ Chi' : ['Hóc Môn'],
+                        'Bình Chánh': ['7', '8', 'Nhà Bè', 'Hóc Môn'] 
+                      }
 
     def addNewQuan(self, quanName:str):
         if quanName not in list(self.listQuan.keys()):
