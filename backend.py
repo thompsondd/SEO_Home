@@ -230,7 +230,7 @@ class Manage:
                         self.listQuan[i].NN.append(self.listQuan[j])
 
     def addRecommend(self,canho,q,w, include=1):
-        listR = canho.getNNScore(q,w)
+        listR = canho.getNNScore(q,w,include)
         for ich in listR["ch"]:
             if ich in self.recommend_list["ch"]:
                 a = self.recommend_list["score"][self.recommend_list["ch"].index(ich)]
