@@ -113,8 +113,8 @@ class CanHo:
         # 'wc_p': 8, 'school_p': 8, 'market_p': 8, 'entertainment_p': 8
         #}
         origin_data,weight = weight
-        score = np.array([1/np.exp(dis), 
-                          self.score2Set([query["bottom_money"],query["top_money"]],canho.getData("rates")),
+        score = np.array([1/np.exp(dis), # Quan
+                          self.score2Set([query["bottom_money"],query["top_money"]],canho.getData("rates")), #
                           self.score2Set(query["area"],canho.getData("areas")),
                           self.scoreIntSet(query["sleep"],canho.getData("bedrooms")),
                           self.scoreIntSet(query["vs"],canho.getData("wc")),

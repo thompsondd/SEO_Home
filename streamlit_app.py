@@ -190,7 +190,7 @@ if submitted:
                                             a=d['markets']
                                             st.write(a)
                                         with col3:
-                                            st.markdown('Số trạm nhà hàng: ')
+                                            st.markdown('Số nhà hàng: ')
                                             st.write('- - - - - - - - - - - - - - - - - - ')
                                         with col4:
                                             a=d['restaurants']
