@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
 import streamlit as st
-#
+# Uncomment the line below to get data from database
+# DETA_KEY = "c0wv6c9o_VKqaoUUfQA14zKYXfYnfk3ftvWX3r4aa"
 load_dotenv(".env")
 try:
     DETA_KEY = os.getenv("DETA_KEY")
